@@ -30,7 +30,7 @@ function OrderSuccess() {
         if (sessionId) {
           try {
             const verifyRes = await api.post('/orders/verify-payment', {
-              shopKartOrderId: id,
+              easyShoppingOrderId: id,
               sessionId,
             });
             if (isMounted && verifyRes.data?.order) {

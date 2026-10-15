@@ -1,7 +1,7 @@
 {
-  "name": "shopkart-backend",
+  "name": "easyshopping-backend",
   "version": "1.0.0",
-  "description": "ShopKart backend authentication service",
+  "description": "EasyShopping backend authentication service",
   "main": "index.js",
   "type": "module",
   "scripts": {

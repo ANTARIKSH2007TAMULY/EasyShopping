@@ -53,8 +53,6 @@ const orderSchema = new mongoose.Schema(
       enum: ['PENDING', 'PAID', 'FAILED'],
       default: 'PENDING',
     },
-    razorpayOrderId: String,
-    razorpayPaymentId: String,
     stripeSessionId: String,
     stripePaymentIntentId: String,
   },

@@ -42,6 +42,21 @@ app.use(express.json());
 
 app.use(cookieParser());
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'EasyShopping backend is running.',
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Healthy',
+  });
+});
+
 app.use('/customers', customerRoutes);
 app.use('/products', productRoutes);
 app.use('/wishlist', wishlistRoutes);

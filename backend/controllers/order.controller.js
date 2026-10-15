@@ -163,7 +163,7 @@ export const createPaymentOrder = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      shopKartOrderId: String(order._id),
+      easyShoppingOrderId: String(order._id),
       sessionId: session.id,
       url: session.url,
       stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
@@ -178,9 +178,9 @@ export const createPaymentOrder = async (req, res) => {
 
 export const verifyPayment = async (req, res) => {
   try {
-    const { shopKartOrderId, sessionId } = req.body;
+    const { easyShoppingOrderId, sessionId } = req.body;
 
-    if (!shopKartOrderId || !sessionId) {
+    if (!easyShoppingOrderId || !sessionId) {
       return res.status(400).json({
         success: false,
         message: 'Missing payment verification details.',
@@ -195,7 +195,7 @@ export const verifyPayment = async (req, res) => {
     }
 
     const order = await Order.findOne({
-      _id: shopKartOrderId,
+      _id: easyShoppingOrderId,
       user: req.user._id,
     });
 
