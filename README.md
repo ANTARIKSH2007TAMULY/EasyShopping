@@ -1,6 +1,6 @@
-# Shopkart
+# EasyShopping
 
-Shopkart is a small e-commerce application built with a Node.js/Express backend and a React frontend. The project demonstrates a simplified online shopping flow: customers can register, log in, browse products, add items to a wishlist, and manage a cart before checkout.
+EasyShopping is a small e-commerce application built with a Node.js/Express backend and a React frontend. The project demonstrates a simplified online shopping flow: customers can register, log in, browse products, add items to a wishlist, and manage a cart before checkout.
 
 ## Project goals
 

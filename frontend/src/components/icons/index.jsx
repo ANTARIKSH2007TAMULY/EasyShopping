@@ -1,4 +1,4 @@
-// Scalable, accessible SVG icons for ShopKart
+// Scalable, accessible SVG icons for EasyShopping
 export function LogoIcon({ className = '', size = 28 }) {
   return (
     <svg

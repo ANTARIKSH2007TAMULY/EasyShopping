@@ -107,7 +107,7 @@ function OrderSuccess() {
           <span className="eyebrow" style={{ color: '#10b981' }}>Payment Successful</span>
           <h2>Thank You For Your Order!</h2>
           <p style={{ marginTop: '8px', color: 'var(--muted-text)' }}>
-            Your order has been placed and confirmed in the ShopKart system.
+            Your order has been placed and confirmed in the EasyShopping system.
           </p>
 
           <div

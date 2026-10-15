@@ -9,7 +9,7 @@ const getLoginErrorMessage = (err, fallback = 'Invalid Credentials') => {
   const message = err?.response?.data?.message;
 
   if (err?.code === 'ERR_NETWORK') {
-    return 'Unable to reach the ShopKart server. Please try again in a moment.';
+    return 'Unable to reach the EasyShopping server. Please try again in a moment.';
   }
 
   if (status === 400) {
@@ -66,9 +66,9 @@ function Login() {
   return (
     <div className="auth-page">
       <header className="auth-topbar">
-        <Link to="/" className="auth-brand" aria-label="ShopKart Homepage">
+        <Link to="/" className="auth-brand" aria-label="EasyShopping Homepage">
           <LogoIcon size={30} />
-          <span>ShopKart</span>
+          <span>EasyShopping</span>
         </Link>
         <ThemeToggle />
       </header>
@@ -76,7 +76,7 @@ function Login() {
       <main className="auth-card auth-card--login">
         <div className="auth-header">
           <span className="brand-mark">Welcome Back</span>
-          <h1>Sign In to ShopKart</h1>
+          <h1>Sign In to EasyShopping</h1>
           <p>Access your saved wishlist, active cart, and order history.</p>
         </div>
 

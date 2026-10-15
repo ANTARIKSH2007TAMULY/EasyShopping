@@ -4,13 +4,13 @@ import { SunIcon, MoonIcon } from './icons';
 // ThemeToggle stores the user's preference in localStorage so the selected appearance persists across reloads.
 function ThemeToggle({ className = '' }) {
   const [theme, setTheme] = useState(() => {
-    const savedTheme = localStorage.getItem('shopkart-theme');
+    const savedTheme = localStorage.getItem('easyshopping-theme');
     return savedTheme || 'light';
   });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('shopkart-theme', theme);
+    localStorage.setItem('easyshopping-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

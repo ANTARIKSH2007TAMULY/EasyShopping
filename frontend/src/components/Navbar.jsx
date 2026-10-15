@@ -35,9 +35,9 @@ function Navbar() {
     <header className="navbar-wrapper">
       <nav className="navbar" aria-label="Main Navigation">
         <div className="nav-brand">
-          <Link to="/home" aria-label="ShopKart Homepage">
+          <Link to="/home" aria-label="EasyShopping Homepage">
             <LogoIcon size={30} />
-            <span>ShopKart</span>
+            <span>EasyShopping</span>
           </Link>
         </div>
 
@@ -91,7 +91,7 @@ function Navbar() {
             type="button"
             className="logout-button"
             onClick={handleLogout}
-            title="Log out of ShopKart"
+            title="Log out of EasyShopping"
             aria-label="Log out"
           >
             <LogoutIcon size={16} />

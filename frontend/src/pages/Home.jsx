@@ -121,7 +121,7 @@ function Home() {
             </section>
 
             {/* Value Proposition Strip */}
-            <section className="home-perks-strip" aria-label="ShopKart Benefits">
+            <section className="home-perks-strip" aria-label="EasyShopping Benefits">
               <div className="home-perk-card">
                 <div className="home-perk-icon">
                   <TruckIcon size={20} />

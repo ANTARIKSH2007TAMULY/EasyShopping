@@ -9,7 +9,7 @@ const getRegisterErrorMessage = (err, fallback = 'Registration failed. Please tr
   const message = err?.response?.data?.message;
 
   if (err?.code === 'ERR_NETWORK') {
-    return 'Unable to reach the ShopKart server. Please try again in a moment.';
+    return 'Unable to reach the EasyShopping server. Please try again in a moment.';
   }
 
   if (status === 400) {
@@ -90,9 +90,9 @@ function Register() {
   return (
     <div className="auth-page">
       <header className="auth-topbar">
-        <Link to="/" className="auth-brand" aria-label="ShopKart Homepage">
+        <Link to="/" className="auth-brand" aria-label="EasyShopping Homepage">
           <LogoIcon size={30} />
-          <span>ShopKart</span>
+          <span>EasyShopping</span>
         </Link>
         <ThemeToggle />
       </header>
@@ -100,7 +100,7 @@ function Register() {
       <main className="auth-card auth-card--register">
         <div className="auth-header">
           <span className="brand-mark">Create Account</span>
-          <h1>Join ShopKart</h1>
+          <h1>Join EasyShopping</h1>
           <p>Sign up to curate your wishlist, save orders, and shop faster.</p>
         </div>
 

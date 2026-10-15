@@ -313,7 +313,7 @@ function Checkout() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <ShieldCheckIcon size={15} />
-                <span>ShopKart Buyer Guarantee</span>
+                <span>EasyShopping Buyer Guarantee</span>
               </div>
             </div>
           </aside>

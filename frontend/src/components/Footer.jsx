@@ -43,9 +43,9 @@ function Footer() {
       <div className="footer-main">
         <div className="footer-container footer-main-grid">
           <div className="footer-col footer-col-brand">
-            <Link to="/home" className="footer-brand" aria-label="ShopKart Homepage">
+            <Link to="/home" className="footer-brand" aria-label="EasyShopping Homepage">
               <LogoIcon size={30} />
-              <span className="footer-brand-name">ShopKart</span>
+              <span className="footer-brand-name">EasyShopping</span>
             </Link>
             <p className="footer-brand-desc">
               Your destination for curated, premium lifestyle, tech, and everyday essentials designed for modern living.
@@ -82,7 +82,7 @@ function Footer() {
           <div className="footer-col">
             <h4 className="footer-heading">Trust & Security</h4>
             <p className="footer-text-muted">
-              ShopKart delivers high-performance e-commerce with real-time stock tracking, encrypted customer authentication, and instant Stripe test-mode processing.
+              EasyShopping delivers high-performance e-commerce with real-time stock tracking, encrypted customer authentication, and instant Stripe test-mode processing.
             </p>
             <div className="footer-payment-badges">
               <span className="payment-badge">Stripe</span>
@@ -96,7 +96,7 @@ function Footer() {
 
       <div className="footer-bottom">
         <div className="footer-container footer-bottom-inner">
-          <p>© {new Date().getFullYear()} ShopKart Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} EasyShopping Inc. All rights reserved.</p>
           <p className="footer-env-note">Simulated Production Environment • Stripe Test Mode Active</p>
         </div>
       </div>
