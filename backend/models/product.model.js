@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// This schema describes each catalog item: its name, description, price, stock,
+// and image. The validation rules help prevent invalid products from entering
+// the database.
 const productSchema = new mongoose.Schema({
   name: {
     type: String,

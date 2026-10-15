@@ -1,9 +1,8 @@
-import crypto from 'crypto';
 import mongoose from 'mongoose';
 import Customer from '../models/customer.model.js';
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
-import razorpay from '../utils/razorpay.js';
+import stripe from '../utils/stripe.js';
 
 const parseAddress = (shippingAddress = {}) => {
   const fullName = String(shippingAddress.fullName || '').trim();
@@ -53,10 +52,10 @@ export const createPaymentOrder = async (req, res) => {
       });
     }
 
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET || !razorpay) {
+    if (!process.env.STRIPE_SECRET_KEY || !stripe) {
       return res.status(500).json({
         success: false,
-        message: 'Razorpay credentials are not configured yet.',
+        message: 'Stripe test-mode credentials are not configured.',
       });
     }
 
@@ -132,24 +131,42 @@ export const createPaymentOrder = async (req, res) => {
       status: 'PENDING_PAYMENT',
     });
 
-    const amountInPaise = Math.round(totalAmount * 100);
+    const clientUrl = req.headers.origin || process.env.CLIENT_URL || 'http://localhost:5173';
 
-    const razorpayOrder = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: String(order._id),
+    const line_items = orderItems.map((item) => ({
+      price_data: {
+        currency: 'inr',
+        product_data: {
+          name: item.name,
+          images: item.image && item.image.startsWith('http') ? [item.image] : [],
+        },
+        unit_amount: Math.round(Number(item.price) * 100),
+      },
+      quantity: item.quantity,
+    }));
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items,
+      customer_email: customer.email,
+      client_reference_id: String(order._id),
+      metadata: {
+        orderId: String(order._id),
+        userId: String(customer._id),
+      },
+      success_url: `${clientUrl}/order-success/${order._id}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${clientUrl}/checkout?canceled=true`,
     });
 
-    order.razorpayOrderId = razorpayOrder.id;
+    order.stripeSessionId = session.id;
     await order.save();
 
     return res.status(200).json({
       success: true,
       shopKartOrderId: String(order._id),
-      razorpayOrderId: razorpayOrder.id,
-      amount: razorpayOrder.amount,
-      currency: razorpayOrder.currency,
-      key: process.env.RAZORPAY_KEY_ID,
+      sessionId: session.id,
+      url: session.url,
+      stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
     });
   } catch (error) {
     return res.status(500).json({
@@ -161,19 +178,19 @@ export const createPaymentOrder = async (req, res) => {
 
 export const verifyPayment = async (req, res) => {
   try {
-    const { shopKartOrderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { shopKartOrderId, sessionId } = req.body;
 
-    if (!shopKartOrderId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    if (!shopKartOrderId || !sessionId) {
       return res.status(400).json({
         success: false,
         message: 'Missing payment verification details.',
       });
     }
 
-    if (!process.env.RAZORPAY_KEY_SECRET || !razorpay) {
+    if (!process.env.STRIPE_SECRET_KEY || !stripe) {
       return res.status(500).json({
         success: false,
-        message: 'Razorpay secret is not configured.',
+        message: 'Stripe secret key is not configured.',
       });
     }
 
@@ -189,36 +206,30 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    if (order.razorpayOrderId !== razorpay_order_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid payment signature',
+    if (order.paymentStatus === 'PAID') {
+      return res.status(200).json({
+        success: true,
+        message: 'Payment already verified successfully',
+        order,
       });
     }
 
-    const body = `${order.razorpayOrderId}|${razorpay_payment_id}`;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest('hex');
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    const expectedBuffer = Buffer.from(expectedSignature);
-    const receivedBuffer = Buffer.from(razorpay_signature);
-
-    const isValidSignature =
-      expectedBuffer.length === receivedBuffer.length &&
-      crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
-
-    if (!isValidSignature) {
+    if (session.payment_status !== 'paid') {
       return res.status(400).json({
         success: false,
-        message: 'Invalid payment signature',
+        message: 'Payment has not been completed on Stripe.',
       });
     }
 
     order.paymentStatus = 'PAID';
     order.status = 'PLACED';
-    order.razorpayPaymentId = razorpay_payment_id;
+    order.stripeSessionId = session.id;
+    order.stripePaymentIntentId =
+      typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : session.payment_intent?.id;
     await order.save();
 
     const customer = await Customer.findById(req.user._id);
@@ -229,7 +240,7 @@ export const verifyPayment = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Payment verified successfully',
+      message: 'Payment verified successfully via Stripe',
       order,
     });
   } catch (error) {
@@ -238,6 +249,48 @@ export const verifyPayment = async (req, res) => {
       message: error.message || 'Server error while verifying payment',
     });
   }
+};
+
+export const handleStripeWebhook = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    if (!process.env.STRIPE_WEBHOOK_SECRET || !stripe) {
+      return res.status(400).send('Webhook secret not configured');
+    }
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const orderId = session.client_reference_id || session.metadata?.orderId;
+    if (orderId) {
+      const order = await Order.findById(orderId);
+      if (order && order.paymentStatus !== 'PAID') {
+        order.paymentStatus = 'PAID';
+        order.status = 'PLACED';
+        order.stripeSessionId = session.id;
+        order.stripePaymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id;
+        await order.save();
+
+        if (order.user) {
+          const customer = await Customer.findById(order.user);
+          if (customer) {
+            customer.cart = [];
+            await customer.save();
+          }
+        }
+      }
+    }
+  }
+
+  return res.status(200).json({ received: true });
 };
 
 export const getOrders = async (req, res) => {

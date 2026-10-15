@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import api from '../services/api';
+import { PackageIcon, ArrowRightIcon, Spinner } from '../components/icons';
 
 const formatPrice = (value) =>
   new Intl.NumberFormat('en-IN', {
@@ -33,8 +35,7 @@ function Orders() {
           navigate('/login');
           return;
         }
-
-        setError('Unable to load your orders right now.');
+        setError('Unable to load your order history.');
       } finally {
         setLoading(false);
       }
@@ -45,14 +46,19 @@ function Orders() {
 
   const content = useMemo(() => {
     if (loading) {
-      return <p className="status-text">Loading your orders...</p>;
+      return (
+        <div className="page-loading-wrap">
+          <Spinner size={32} />
+          <p className="status-text" style={{ marginLeft: '12px' }}>Loading your orders...</p>
+        </div>
+      );
     }
 
     if (error) {
       return (
         <div className="empty-state">
-          <p>{error}</p>
-          <button type="button" className="primary-button" onClick={() => window.location.reload()}>
+          <p className="error-message">{error}</p>
+          <button type="button" className="primary-button" onClick={() => window.location.reload()} style={{ marginTop: '16px' }}>
             Try Again
           </button>
         </div>
@@ -62,9 +68,15 @@ function Orders() {
     if (!orders.length) {
       return (
         <div className="empty-state">
-          <h2>You have not placed any orders yet.</h2>
-          <p>Start shopping to see your purchase history here.</p>
-          <Link to="/products" className="primary-button inline-button">Start Shopping</Link>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: 'var(--muted-text)' }}>
+            <PackageIcon size={44} />
+          </div>
+          <h2>No Orders Placed Yet</h2>
+          <p>When you complete a purchase, your order history and tracking details will appear here.</p>
+          <Link to="/products" className="primary-button inline-button">
+            <span>Explore Products</span>
+            <ArrowRightIcon size={16} />
+          </Link>
         </div>
       );
     }
@@ -72,37 +84,42 @@ function Orders() {
     return (
       <div className="orders-list">
         {orders.map((order) => (
-          <div className="order-card" key={order._id}>
+          <article className="order-card" key={order._id}>
             <div className="order-card-header">
               <div>
-                <p className="eyebrow eyebrow-small">Order ID</p>
-                <h3>{order._id.slice(-8).toUpperCase()}</h3>
+                <span className="eyebrow eyebrow-small">Order Ref</span>
+                <h3>#{order._id.slice(-8).toUpperCase()}</h3>
               </div>
-              <span className="status-badge">{order.status}</span>
+              <span className="status-badge">{order.status || 'PLACED'}</span>
             </div>
 
             <div className="info-list order-info-list">
               <div className="info-row">
-                <span>Date</span>
+                <span>Order Placed</span>
                 <strong>{formatDate(order.createdAt)}</strong>
               </div>
-              <div className="info-row small-row">
-                <span>Total</span>
-                <strong>{formatPrice(order.totalAmount)}</strong>
+              <div className="info-row">
+                <span>Total Amount</span>
+                <strong style={{ color: 'var(--primary-color)' }}>{formatPrice(order.totalAmount)}</strong>
               </div>
-              <div className="info-row small-row">
-                <span>Payment</span>
-                <strong>{order.paymentStatus}</strong>
+              <div className="info-row">
+                <span>Payment Status</span>
+                <strong>{order.paymentStatus || 'COMPLETED'}</strong>
               </div>
             </div>
 
             <div className="order-card-footer">
-              <p>{order.items?.length || 0} item(s)</p>
-              <button type="button" className="secondary-button" onClick={() => navigate(`/orders/${order._id}`)}>
-                View Details
+              <p>{order.items?.length || 0} product{order.items?.length === 1 ? '' : 's'} included</p>
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => navigate(`/orders/${order._id}`)}
+              >
+                <span>View Details</span>
+                <ArrowRightIcon size={14} />
               </button>
             </div>
-          </div>
+          </article>
         ))}
       </div>
     );
@@ -111,12 +128,17 @@ function Orders() {
   return (
     <div className="page-shell">
       <Navbar />
-      <div className="content-page">
+
+      <main className="content-page">
         <div className="section-heading-row">
+          <span className="eyebrow">Customer Account</span>
           <h1>My Orders</h1>
         </div>
+
         {content}
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

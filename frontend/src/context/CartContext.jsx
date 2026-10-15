@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../services/api';
 
@@ -78,10 +79,10 @@ export function CartProvider({ children }) {
   const moveToWishlist = useCallback(async (productId) => {
     try {
       setError('');
-      const response = await api.post(`/wishlist/${productId}`);
+      await api.post(`/wishlist/${productId}`);
       await api.delete(`/cart/${productId}`);
       await fetchCart();
-      return response;
+      return true;
     } catch (err) {
       const message = err.response?.data?.message || 'Unable to move product to wishlist.';
       setError(message);
@@ -100,8 +101,30 @@ export function CartProvider({ children }) {
   );
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    let isCancelled = false;
+
+    const initCart = async () => {
+      try {
+        const response = await api.get('/cart');
+        if (!isCancelled) {
+          setCartItems(response.data.cart || []);
+        }
+      } catch (err) {
+        if (!isCancelled) {
+          if (err.response?.status === 401) {
+            setCartItems([]);
+            return;
+          }
+          setCartItems([]);
+        }
+      }
+    };
+
+    initCart();
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const value = useMemo(
     () => ({

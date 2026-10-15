@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 import Product from '../models/product.model.js';
 
+const sortMap = {
+  price_asc: { price: 1 },
+  price_desc: { price: -1 },
+  newest: { createdAt: -1 },
+  oldest: { createdAt: 1 },
+};
+
 export const createProduct = async (req, res) => {
   try {
     const { name, description, price, category, image, stock } = req.body;
@@ -38,13 +45,13 @@ export const createProduct = async (req, res) => {
       stock: parsedStock,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Product created successfully',
       product,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while creating product',
     });
@@ -53,7 +60,7 @@ export const createProduct = async (req, res) => {
 
 export const getProducts = async (req, res) => {
   try {
-    const { search, category } = req.query;
+    const { search, category, sort } = req.query;
     const query = {};
 
     if (search && String(search).trim()) {
@@ -63,19 +70,20 @@ export const getProducts = async (req, res) => {
       };
     }
 
-    if (category && String(category).trim()) {
+    if (category && String(category).trim() && String(category).trim() !== 'All Categories') {
       query.category = String(category).trim();
     }
 
-    const products = await Product.find(query);
+    const sortKey = String(sort || '').trim();
+    const products = await Product.find(query).sort(sortMap[sortKey] || { createdAt: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: products.length,
       products,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while fetching products',
     });
@@ -102,12 +110,12 @@ export const getProductById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       product,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error while fetching product',
     });

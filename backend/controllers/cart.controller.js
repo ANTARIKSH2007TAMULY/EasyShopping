@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 import Customer from '../models/customer.model.js';
 import Product from '../models/product.model.js';
 
+// `req.params.productId` comes from a dynamic route like /cart/:productId.
+// This controller checks that the ID is valid and prevents the user from adding
+// a product that does not exist or is out of stock.
 export const addToCart = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -31,6 +34,8 @@ export const addToCart = async (req, res) => {
       });
     }
 
+    // `find()` returns the first matching cart item for this product. If it is
+    // already present, we increase its quantity; otherwise we create a new entry.
     const existingItem = customer.cart.find((item) => item.product.toString() === productId);
 
     if (existingItem) {
@@ -67,6 +72,8 @@ export const addToCart = async (req, res) => {
   }
 };
 
+// .populate() replaces the stored ObjectId references with the actual product
+// documents, which lets the frontend render product name, price, and image.
 export const getCart = async (req, res) => {
   try {
     const customer = await Customer.findById(req.user._id).populate({
@@ -94,6 +101,8 @@ export const getCart = async (req, res) => {
   }
 };
 
+// This route updates the quantity in the nested cart array and performs a stock check
+// before saving. The request body is validated before the database is written.
 export const updateCartQuantity = async (req, res) => {
   try {
     const { productId } = req.params;

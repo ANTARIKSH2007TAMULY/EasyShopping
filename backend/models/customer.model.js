@@ -2,6 +2,8 @@
 
 import mongoose from 'mongoose';
 
+// A Mongoose schema defines the shape of a MongoDB document before it is saved.
+// Here, each customer stores a profile plus a nested cart and wishlist.
 const customerSchema = new mongoose.Schema({
   fullName: {
     type: String,
@@ -25,9 +27,11 @@ const customerSchema = new mongoose.Schema({
   },
   wishlist: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',   //IMPORTANT
+    ref: 'Product',
     default: [],
   }],
+  // Each cart item uses a nested object: product points to a Product document and
+  // quantity stores how many units the customer wants.
   cart: [{
     product: {
       type: mongoose.Schema.Types.ObjectId,
